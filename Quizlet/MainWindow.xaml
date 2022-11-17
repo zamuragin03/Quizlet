@@ -18,27 +18,32 @@
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="MyWord" >Мои слова</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="LearnModule" Cursor="Hand" >Изучать модуль</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="SpellingModule" >Правописание</Button>
+            <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="LearnWord" Cursor="Hand" >Учить слова</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="PairModule" Cursor="Hand" >Пары</Button>
             <TextBlock  Text="Выберите модуль" FontSize="30" TextAlignment="Center" FontWeight="DemiBold" TextWrapping="WrapWithOverflow" Background="#FF001F61" Foreground="White"/>
             <ComboBox  HorizontalContentAlignment="Center"  Name="ModuleNamesColumn" FontSize="20" Height="50"/>
         </StackPanel>
-        <TabControl Grid.Column="1"  Name="main" FontSize="35" >
+        <TabControl Grid.Column="1"   FontSize="35" >
             <TabItem  Visibility="Collapsed" Name="LearnItem" VerticalContentAlignment="Center" Foreground="Black" FontSize="45" IsSelected="False">
-                <Grid>
+                <Grid Name="Main">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"></RowDefinition>
                         <RowDefinition Height="auto"></RowDefinition>
                         <RowDefinition Height="1*"></RowDefinition>
                         <RowDefinition Height="Auto"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel>
+                        <Label Name="YesNoGameResult" Content="Правильность ответов: "  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label Name="YesNoAnswerField" Content="AnswerField" VerticalAlignment="Center" Margin="100"/>
                         <Label Name="YesNoQuestionField" Content="Question Field"  VerticalAlignment="Center" Margin="100"/>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button Content="Yes" FontSize="20"  Width="200" HorizontalAlignment="Center"  Margin="100" Click="AnswerYesNo"/>
                         <Button Content="No" FontSize="20" Width="200" HorizontalAlignment="Center" Margin="100" Click="AnswerYesNo"/>
                     </StackPanel>
-                 <StackPanel Grid.Row="2" >
+                 <StackPanel Grid.Row="3" >
                      <Button Content="Начать" Width="200" Background="#FF673AB7" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" Click="StartLearnModuleButton"/>
                  </StackPanel>
                 </Grid>
@@ -98,7 +103,7 @@
                     </ScrollViewer>
                 </Grid>
             </TabItem>
-            <TabItem Name="Spelling" >
+            <TabItem Visibility="Collapsed" Name="Spelling" >
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition></RowDefinition>
@@ -106,10 +111,30 @@
                         <RowDefinition></RowDefinition>
                         <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Label Grid.Row="0" Name="VarBox" Content="Something" VerticalContentAlignment="Center" HorizontalAlignment="Center" />
+                    <Label Name="SpellingLabel" Grid.Row="0"  Content="Something" VerticalContentAlignment="Center" HorizontalAlignment="Center" />
                     <TextBox Name="AnswerBox" Grid.Row="1" Text="Dsf" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBox}"/>
-                    <Button Grid.Row="2" Content="Answer"  VerticalAlignment="Top" HorizontalAlignment="Center" Click="SpellingModuleButton"/>
-                    <Button Grid.Row="3" Content="Start"  VerticalAlignment="Top" HorizontalAlignment="Center" Click="StartSpellingModule"/>
+                    <Button Grid.Row="2" Content="Answer"  VerticalAlignment="Top" HorizontalAlignment="Center" Click="AnswerButtonSpelling"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" >
+                        <Button  Content="Start"   Click="StartSpellingModule" />
+                        <Label Content="Изменить режим" Margin="50"/>
+                        <ToggleButton  Name="isModeReverse"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Visibility="Collapsed"  Name="LearWord"  Foreground="Black"  >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Label Name="LearnWord_Word_Label" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Content="Word" />
+                    <Label Name="LeanWord_Meaning_Label" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Content="WordMeaning" />
+                    <Button Name="LearnWord_Word" Content="Предыдущее слово"  Grid.Row="1"  VerticalAlignment="Center" Width="200" Click="PreviousWord"/>
+                    <Button Name="LeanWord_Meaning" Content="Следующее слово"  Grid.Row="1" Grid.Column="1"  VerticalAlignment="Center" Width="200" Click="NextWord"/>
                 </Grid>
             </TabItem>
         </TabControl>
