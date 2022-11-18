@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
          xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:my="http://schemas.microsoft.com/wpf/2008/toolkit"
         xmlns:local="clr-namespace:Quizlet"
         mc:Ignorable="d"
         Title="Quizlet" Height="700 " Width="1200" WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip">
@@ -12,13 +13,14 @@
             <ColumnDefinition Width="1*"></ColumnDefinition>
             <ColumnDefinition Width="5*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0" Orientation="Vertical" Background="#FF00ABE4" >
+        <StackPanel Name="Buttons" Grid.Column="0" Orientation="Vertical" Background="#FF00ABE4" >
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="AddWord" Cursor="Hand" >Добавить слово</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="AddModule" Cursor="Hand">Добавить модуль</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="MyWord" >Мои слова</Button>
+            <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="LearnWord" Cursor="Hand" >Учить слова</Button>
+
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="LearnModule" Cursor="Hand" >Изучать модуль</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="SpellingModule" >Правописание</Button>
-            <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="LearnWord" Cursor="Hand" >Учить слова</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="PairModule" Cursor="Hand" >Пары</Button>
             <TextBlock  Text="Выберите модуль" FontSize="30" TextAlignment="Center" FontWeight="DemiBold" TextWrapping="WrapWithOverflow" Background="#FF001F61" Foreground="White"/>
             <ComboBox  HorizontalContentAlignment="Center"  Name="ModuleNamesColumn" FontSize="20" Height="50"/>
@@ -33,7 +35,7 @@
                         <RowDefinition Height="Auto"></RowDefinition>
                     </Grid.RowDefinitions>
                     <StackPanel>
-                        <Label Name="YesNoGameResult" Content="Правильность ответов: "  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <Label Name="YesNoGameResult" Content="Прогресс: "  VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label Name="YesNoAnswerField" Content="AnswerField" VerticalAlignment="Center" Margin="100"/>
@@ -75,10 +77,10 @@
                     </Grid.RowDefinitions>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
                         <TextBox Name="ModuleName" TextAlignment="Center"  Height="70" Width="350" Background="#FF0ABFFF" Margin="50"/>
-                        <Button Content="Добавить" Foreground="Black" Background="#DB587A" Margin="50" Height="50" Width="180"  Style="{StaticResource MaterialDesignFlatButton}" Click="Button_Click_1"/>
+                        <Button Content="Добавить" Foreground="Black" Background="#DB587A" Margin="50" Height="50" Width="180"  FontSize="25" Style="{StaticResource MaterialDesignFlatButton}" Click="AddModule_Button" Cursor="Hand"/>
                     </StackPanel>
-                    <ScrollViewer  CanContentScroll="True" IsDeferredScrollingEnabled="False" VerticalScrollBarVisibility="Visible"  Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top">
-                        <ListView  HorizontalContentAlignment="Stretch"  HorizontalAlignment="Center" Name="Module_List"  ItemsSource="{DynamicResource ResourceKey=Modules}" FontSize="35" Style="{DynamicResource MaterialDesignListView}" >
+                    <ScrollViewer  VerticalScrollBarVisibility="Visible"  Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top">
+                        <ListView  HorizontalContentAlignment="Stretch"  SelectionMode="Single" HorizontalAlignment="Center" Name="Module_List"  ItemsSource="{DynamicResource ResourceKey=Modules}" FontSize="35" >
                             <ListView.View>
                                 <GridView ScrollViewer.CanContentScroll="True" AllowsColumnReorder="False">
                                     <GridViewColumn DisplayMemberBinding="{Binding Path=Module_Name}" Width="auto">Модули</GridViewColumn>
@@ -89,11 +91,11 @@
                 </Grid>
             </TabItem>
             <TabItem  Visibility="Collapsed"  Name="MyWords"  Foreground="Black">
-                <Grid Background="DeepSkyBlue">
+                <Grid Background="DeepSkyBlue" >
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <ListView HorizontalContentAlignment="Stretch" SelectionMode="Single" HorizontalAlignment="Center" Name="Word_List"   ItemsSource="{DynamicResource ResourceKey=Words}" FontSize="25" Style="{DynamicResource MaterialDesignListView}" >
+                        <ListView HorizontalContentAlignment="Stretch" SelectionMode="Single" HorizontalAlignment="Center" Name="Word_List"  ItemsSource="{DynamicResource ResourceKey=Words}" FontSize="25" >
                             <ListView.View>
-                                <GridView ScrollViewer.CanContentScroll="True" AllowsColumnReorder="False">
+                                <GridView ScrollViewer.CanContentScroll="True" AllowsColumnReorder="False" >
                                     <GridViewColumn DisplayMemberBinding="{Binding Path=Module_Name}" Width="auto">Модуль</GridViewColumn>
                                     <GridViewColumn DisplayMemberBinding="{Binding Path=Word_Text}"  Width="auto">Слово</GridViewColumn>
                                     <GridViewColumn DisplayMemberBinding="{Binding Path=Word_Meaning}" Width="auto">Определение</GridViewColumn>
@@ -113,11 +115,12 @@
                     </Grid.RowDefinitions>
                     <Label Name="SpellingLabel" Grid.Row="0"  Content="Something" VerticalContentAlignment="Center" HorizontalAlignment="Center" />
                     <TextBox Name="AnswerBox" Grid.Row="1" Text="Dsf" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBox}"/>
-                    <Button Grid.Row="2" Content="Answer"  VerticalAlignment="Top" HorizontalAlignment="Center" Click="AnswerButtonSpelling"/>
+                    <Button Name="SpellingStartButton" Grid.Row="2" Content="Answer"  VerticalAlignment="Top" HorizontalAlignment="Center" Click="AnswerButtonSpelling" IsEnabled="False"/>
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" >
                         <Button  Content="Start"   Click="StartSpellingModule" />
                         <Label Content="Изменить режим" Margin="50"/>
                         <ToggleButton  Name="isModeReverse"/>
+                        <Button  Content="Stop"   Click="StopSpellingModule" Margin="50"/>
                     </StackPanel>
                 </Grid>
             </TabItem>

@@ -20,6 +20,7 @@ using System.Xml;
 using System.Data.SQLite;
 using System.Threading;
 using System.Windows.Media.Animation;
+using NLog;
 
 
 namespace Quizlet
@@ -30,6 +31,7 @@ namespace Quizlet
     public partial class MainWindow : Window
     {
 
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         delegate void InfoHandler(string text);
         private string data;
         SQLiteConnection db;
@@ -51,6 +53,14 @@ namespace Quizlet
 
         public MainWindow()
         {
+            var config = new NLog.Config.LoggingConfiguration();
+            var logfile = new NLog.Targets.FileTarget("logfile") { FileName = "file.txt" };
+            var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
+
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
+            NLog.LogManager.Configuration = config;
+
             messageBoxHandler = PrintInfo;
             InitializeComponent();
 
@@ -58,26 +68,15 @@ namespace Quizlet
             db.Open();
 
             state = State.Unstated;
-            SQLiteDataReader reader;
-            command = new SQLiteCommand("select Module_Name from Modules", db);
-            reader = command.ExecuteReader();
-            ModuleNamesColumn.Items.Clear();
-            foreach (DbDataRecord item in reader)
-            {
-                ModuleNamesColumn.Items.Add(item["Module_Name"]);
-            }
+            Update_Modules_List();
         }
-
-        void PrintInfo(string message) =>
-            MessageBox.Show(message, "Quizlet", MessageBoxButton.OK, MessageBoxImage.Information);
-
-        void Logging(string message)
+        void PrintInfo(string message)
         {
-            DateTime todayDateTime = DateTime.Today.ToLocalTime();
-            //TODO дохуя всего
-        }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+            MessageBox.Show(message, "Quizlet", MessageBoxButton.OK, MessageBoxImage.Information);
+            Log.Warn(message);
+        }
+        private void AddModule_Button(object sender, RoutedEventArgs e)
         {
             string moduleNameText = ModuleName.Text;
             if (string.IsNullOrEmpty(moduleNameText.Trim()))
@@ -93,7 +92,6 @@ namespace Quizlet
             ModuleName.Text = "";
             Update_Modules_List();
         }
-
         private void Add_New_Word(object sender, RoutedEventArgs e)
         {
             string WordnNameText = WordName.Text;
@@ -136,7 +134,6 @@ namespace Quizlet
                 ModuleNames.Items.Add(item["Module_Name"]);
             }
         }
-
         private void MyWordsTabItem()
         {
             SQLiteDataReader reader;
@@ -159,7 +156,6 @@ namespace Quizlet
             Word_List.ItemsSource = words.OrderBy(x => x.Module_Name);
             command.Dispose();
         }
-
         void Update_Modules_List()
         {
             SQLiteDataReader reader;
@@ -175,13 +171,13 @@ namespace Quizlet
                     Word_Meaning = null,
                     Word_Text = null,
                 };
+                ModuleNamesColumn.Items.Add(temp.Module_Name);
                 Module_List.Items.Add(temp);
-                ModuleNamesColumn.Items.Add(temp);
+
+
             }
             command.Dispose();
         }
-
-
         void LearnWordTabItem()
         {
             SQLiteDataReader reader;
@@ -198,7 +194,6 @@ namespace Quizlet
                 });
             }
         }
-
         private void OnDelete(object sender, RoutedEventArgs e)
         {
             MessageBoxResult result = MessageBox.Show("Вы уверены, что хотите удалить все данные?", "Quizlet", MessageBoxButton.YesNo);
@@ -216,79 +211,115 @@ namespace Quizlet
                     break;
             }
         }
-
         private void LearnTabIem()
         {
             yesnogame = new YesNoGame(GetCurrentModuleId());
-            var pair = yesnogame.StartGame();
-            YesNoQuestionField.Content = pair.Item1;
-            YesNoAnswerField.Content = pair.Item2;
+            try
+            {
+                var pair = yesnogame.StartGame();
+                YesNoQuestionField.Content = pair.Item1;
+                YesNoAnswerField.Content = pair.Item2;
+            }
+            catch (Exception e)
+            {
+                Log.Error(e.Message,"Не добавлены слова");
+                messageBoxHandler.Invoke("Не добавлены слова");
+            }
+            
         }
-
-
         private void LearnModule(object sender, RoutedEventArgs e)
         {
+            Button el = sender as Button;
+
             if (state == State.Unstated)
             {
                 LearnItem.IsSelected = true;
+                ChangeSelectedButtonBackground(el);
 
             }
         }
-
         private void AddWord(object sender, RoutedEventArgs e)
         {
+            Button el = sender as Button;
+            
             if (state == State.Unstated)
             {
                 AddWords.IsSelected = true;
+                ChangeSelectedButtonBackground(el);
+
                 AddWordTabItem();
             }
 
         }
-
         private void AddModule(object sender, RoutedEventArgs e)
         {
+
+            Button el = sender as Button;
 
             if (state == State.Unstated)
             {
                 Add_Module.IsSelected = true;
+                ChangeSelectedButtonBackground(el);
                 Update_Modules_List();
+
             }
 
         }
-
         private void MyWord(object sender, RoutedEventArgs e)
         {
+            Button el = sender as Button;
+
             if (state == State.Unstated)
             {
                 MyWords.IsSelected = true;
+                ChangeSelectedButtonBackground(el);
+
                 MyWordsTabItem();
+
             }
         }
-
         private void SpellingModule(object sender, RoutedEventArgs e)
         {
+            Button el = sender as Button;
+
             if (state == State.Unstated)
             {
                 Spelling.IsSelected = true;
+                ChangeSelectedButtonBackground(el);
+
             }
         }
         private void LearnWord(object sender, RoutedEventArgs e)
         {
+            Button el = sender as Button;
+
             if (state == State.Unstated)
             {
                 LearWord.IsSelected = true;
+                ChangeSelectedButtonBackground(el);
+
                 LearnWordTabItem();
+
 
             }
         }
-
         private void PairModule(object sender, RoutedEventArgs e)
         {
 
         }
-
         private void AnswerButtonSpelling(object sender, RoutedEventArgs e)
         {
+            string answer = AnswerBox.Text;
+            int result = spellinggame.CheckAnswer(answer, isModeReverse.IsChecked.Value);
+            var answers = spellinggame.GetResult();
+            if (result <= 2)
+              Spelling_();
+            else
+            {
+                messageBoxHandler.Invoke("Ваш ответ "+ answers.Item1+" \n"+ "Правильный ответ "+ answers.Item2);
+            }
+
+
 
         }
         private void StartSpellingModule(object sender, RoutedEventArgs e)
@@ -299,19 +330,17 @@ namespace Quizlet
                 return;
             }
 
+            SpellingStartButton.IsEnabled = true;
             Spelling_();
             state = State.Stated;
             Title = $"Изучение модуля — {ModuleNamesColumn.Text}";
         }
-
         void Spelling_()
         {
             spellinggame = new SpellingGame(GetCurrentModuleId());
             SpellingLabel.Content = spellinggame.StartGame(isModeReverse.IsChecked.Value);
 
         }
-
-
         private void StartLearnModuleButton(object sender, RoutedEventArgs e)
         {
             if (String.IsNullOrEmpty(ModuleNamesColumn.Text.Trim()))
@@ -323,7 +352,6 @@ namespace Quizlet
             Title = $"Изучение модуля — {ModuleNamesColumn.Text}";
             LearnTabIem();
         }
-
         private int GetCurrentModuleId()
         {
             int CurrentModule_Id = 0;
@@ -338,7 +366,6 @@ namespace Quizlet
 
             return CurrentModule_Id;
         }
-
         private void AnswerYesNo(object sender, RoutedEventArgs e)
         {
 
@@ -353,7 +380,7 @@ namespace Quizlet
                 yesnogame.ChangeAccuracy(false);
             }
 
-            YesNoGameResult.Content = "Правильность ответов: " + $"{yesnogame.Accuracy:F}%";
+            YesNoGameResult.Content = "Прогресс: " + $"{yesnogame.Accuracy:F}%";
             (string, string) pair = yesnogame.StartGame();
             YesNoQuestionField.Content = pair.Item1;
             YesNoAnswerField.Content = pair.Item2;
@@ -369,7 +396,6 @@ namespace Quizlet
                 messageBoxHandler.Invoke("Изучение модуля завершено");
             }
         }
-
         private void PreviousWord(object sender, RoutedEventArgs e)
         {
             try
@@ -383,7 +409,6 @@ namespace Quizlet
                 messageBoxHandler.Invoke("Некуда назад двигаться");
             }
         }
-
         private void NextWord(object sender, RoutedEventArgs e)
         {
             try
@@ -398,125 +423,28 @@ namespace Quizlet
             }
             
         }
-
-        
-    }
-    class YesNoGame
-    {
-
-        public string QuestionField { get; set; }
-        public string AnswerField { get; set; }
-        private readonly int ModuleId;
-        public double Accuracy { get; set; }
-        private int WordsAmount = 0;
-        private double AccuracyStep;
-        private SQLiteConnection db;
-        private List<string> ansList;
-        private List<string> questList;
-        public YesNoGame(int moduleId)
+        void ChangeSelectedButtonBackground(Button button, bool flag=true)
         {
-            ModuleId = moduleId;
-            db = new SQLiteConnection("Data Source = data.db;");
-            db.Open();
-            questList= new List<string>();
-             ansList= new List<string>();
 
-            SQLiteDataReader reader;
-            SQLiteCommand command = new SQLiteCommand($"select Word, Meaning from Words where Module_id='{ModuleId}'", db);
-            reader = command.ExecuteReader();
-
-            foreach (DbDataRecord el in reader)
+            foreach (UIElement btn in Buttons.Children)
             {
-                questList.Add(el["Word"].ToString());
-                ansList.Add(el["Meaning"].ToString());
-            }
-
-        }
-
-        public (string, string) StartGame()
-        {
-            Random rnd = new();
-            QuestionField = questList[rnd.Next(0, questList.Count)];
-            AnswerField = ansList[rnd.Next(0, questList.Count)];
-            WordsAmount = ansList.Count;
-            AccuracyStep = (double)1 / (WordsAmount * 2);
-
-            return (QuestionField, AnswerField);
-        }
-
-        public bool GetResult()
-        {
-            SQLiteDataReader reader;
-            SQLiteCommand command2 = new SQLiteCommand($"SELECT Meaning from Words where Word = '{QuestionField}'", db);
-            reader = command2.ExecuteReader();
-            string word = "";
-            foreach (DbDataRecord el in reader)
-            {
-                word = el["Meaning"].ToString();
-            }
-            return AnswerField.Equals(word);
-        }
-
-        public void ChangeAccuracy(bool plus = true)
-        {
-            if (Accuracy < 0 || Math.Abs(Accuracy - AccuracyStep) < 0)
-            {
-                return;
-            }
-            if (plus)
-            {
-                Accuracy += AccuracyStep;
-                return;
-
-            }
-            Accuracy -= AccuracyStep;
-
-        }
-    }
-
-    class SpellingGame
-    {
-        private string QuestionField;
-        private readonly int ModuleId;
-        private SQLiteConnection db;
-
-        private List<string> wordList;
-        public SpellingGame(int ModuleId)
-        {
-            wordList = new List<string>();
-            this.ModuleId = ModuleId;
-            db = new SQLiteConnection("Data Source = data.db;");
-            db.Open();
-        }
-
-        public string StartGame(bool flag=false)
-        {
-            SQLiteDataReader reader;
-            SQLiteCommand command;
-            Random rnd = new();
-            if (!flag)
-            {
-                command = new SQLiteCommand($"select Word from Words where Module_id='{ModuleId}'", db);
-                reader = command.ExecuteReader();
-                foreach (DbDataRecord el in reader)
+                if (btn is Button btn_)
                 {
-                    wordList.Add(el["Word"].ToString());
+                  btn_.Background = new SolidColorBrush(Colors.DeepSkyBlue);
+
                 }
-
-                QuestionField = wordList[rnd.Next(wordList.Count)];
-                return QuestionField;
             }
-
-            command = new SQLiteCommand($"select Meaning from Words where Module_id='{ModuleId}'", db);
-            reader = command.ExecuteReader();
-            
-            foreach (DbDataRecord el in reader)
+            if (flag)
             {
-                wordList.Add(el["Meaning"].ToString());
+                button.Background = new SolidColorBrush(Colors.Blue);
             }
 
-            QuestionField = wordList[rnd.Next(wordList.Count)];
-            return QuestionField;
+        }
+
+        private void StopSpellingModule(object sender, RoutedEventArgs e)
+        {
+            state = State.Unstated;
+            SpellingStartButton.IsEnabled = false;
         }
     }
     class Word

@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.32510.428
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quizlet", "Quizlet\Quizlet.csproj", "{C6DBBB0F-2411-4CD2-BB37-1DB80DC4C8C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algos", "Algos\Algos.csproj", "{07AA75E2-8F96-4A71-9A41-6C92C2B1BE7D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{C6DBBB0F-2411-4CD2-BB37-1DB80DC4C8C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6DBBB0F-2411-4CD2-BB37-1DB80DC4C8C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6DBBB0F-2411-4CD2-BB37-1DB80DC4C8C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{07AA75E2-8F96-4A71-9A41-6C92C2B1BE7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07AA75E2-8F96-4A71-9A41-6C92C2B1BE7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07AA75E2-8F96-4A71-9A41-6C92C2B1BE7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07AA75E2-8F96-4A71-9A41-6C92C2B1BE7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
