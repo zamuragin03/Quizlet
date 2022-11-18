@@ -36,7 +36,6 @@ namespace Quizlet
             }
 
         }
-
         public (string, string) StartGame()
         {
             Random rnd = new();
@@ -47,7 +46,6 @@ namespace Quizlet
 
             return (QuestionField, AnswerField);
         }
-
         public bool GetResult()
         {
             SQLiteDataReader reader;
@@ -60,7 +58,6 @@ namespace Quizlet
             }
             return AnswerField.Equals(word);
         }
-
         public void ChangeAccuracy(bool plus = true)
         {
             if (plus)

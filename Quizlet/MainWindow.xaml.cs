@@ -18,6 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml;
 using System.Data.SQLite;
+using System.Diagnostics.SymbolStore;
 using System.Threading;
 using System.Windows.Media.Animation;
 using NLog;
@@ -37,6 +38,7 @@ namespace Quizlet
         SQLiteConnection db;
         SQLiteCommand command;
 
+        private Label currentLabel;
         enum State
         {
             Stated,
@@ -50,7 +52,7 @@ namespace Quizlet
         private InfoHandler messageBoxHandler;
         private YesNoGame yesnogame;
         private SpellingGame spellinggame;
-
+        private PairGame pairgame;
         public MainWindow()
         {
             var config = new NLog.Config.LoggingConfiguration();
@@ -305,7 +307,17 @@ namespace Quizlet
         }
         private void PairModule(object sender, RoutedEventArgs e)
         {
+            Button el = sender as Button;
 
+            if (state == State.Unstated)
+            {
+                Pair.IsSelected = true;
+                ChangeSelectedButtonBackground(el);
+                PairGame();
+
+
+
+            }
         }
         private void AnswerButtonSpelling(object sender, RoutedEventArgs e)
         {
@@ -440,11 +452,60 @@ namespace Quizlet
             }
 
         }
-
         private void StopSpellingModule(object sender, RoutedEventArgs e)
         {
             state = State.Unstated;
             SpellingStartButton.IsEnabled = false;
+        }
+
+        void PairGame()
+        {
+            pairgame = new PairGame(GetCurrentModuleId());
+            var res = pairgame.StartGame();
+            GridCanvas.Children.Clear();
+            Random rnd = new();
+            for (int i = 1; i <= res.Item1.Count; i++)
+            {
+                Label lbl = new Label();
+                lbl.Content = res.Item1[i-1];
+                lbl.MouseMove += Handler;
+                Canvas.SetLeft(lbl,rnd.Next(800));
+                Canvas.SetTop(lbl,rnd.Next(500));
+                GridCanvas.Children.Add(lbl);
+            }
+            for (int i = 1; i <= res.Item2.Count; i++)
+            {
+                Label lbl = new Label();
+                lbl.Content = res.Item2[i-1];
+                lbl.MouseMove += Handler;
+                Canvas.SetLeft(lbl, rnd.Next(800));
+                Canvas.SetTop(lbl, rnd.Next(500));
+                GridCanvas.Children.Add(lbl);
+            }
+        }
+
+
+        private void Handler(object sender, MouseEventArgs e)
+        {
+            Label el = sender as Label;
+            currentLabel = el;
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragDrop.DoDragDrop(el, el, DragDropEffects.Move);
+            }
+        }
+
+        private void GridButtons_OnDrop(object sender, DragEventArgs e)
+        {
+            
+        }
+
+
+        private void GridCanvas_OnDragOver(object sender, DragEventArgs e)
+        {
+            Point p = e.GetPosition(GridCanvas);
+            Canvas.SetLeft(currentLabel, p.X);
+            Canvas.SetTop(currentLabel, p.Y);
         }
     }
     class Word

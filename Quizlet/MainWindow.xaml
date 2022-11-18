@@ -140,6 +140,10 @@
                     <Button Name="LeanWord_Meaning" Content="Следующее слово"  Grid.Row="1" Grid.Column="1"  VerticalAlignment="Center" Width="200" Click="NextWord"/>
                 </Grid>
             </TabItem>
+            <TabItem Visibility="Collapsed"  Name="Pair"  Foreground="Black"  >
+                <Canvas Margin="50" Background="#FF00A6DE" Name="GridCanvas" AllowDrop="True" Drop="GridButtons_OnDrop" DragOver="GridCanvas_OnDragOver">
+                </Canvas>
+            </TabItem>
         </TabControl>
 
     </Grid>
