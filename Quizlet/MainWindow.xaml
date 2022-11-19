@@ -22,7 +22,7 @@
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="LearnModule" Cursor="Hand" >Изучать модуль</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="SpellingModule" >Правописание</Button>
             <Button Foreground="Black" Width="auto" Height="40" FontSize="20" VerticalAlignment="Top" HorizontalContentAlignment="Center" Background="Transparent" VerticalContentAlignment="Center" Click="PairModule" Cursor="Hand" >Пары</Button>
-            <TextBlock  Text="Выберите модуль" FontSize="30" TextAlignment="Center" FontWeight="DemiBold" TextWrapping="WrapWithOverflow" Background="#FF001F61" Foreground="White"/>
+            <TextBlock  Text="Выберите модуль" FontSize="30" TextAlignment="Center" FontWeight="DemiBold" TextWrapping="WrapWithOverflow" Background="DarkSlateBlue" Foreground="White"/>
             <ComboBox  HorizontalContentAlignment="Center"  Name="ModuleNamesColumn" FontSize="20" Height="50"/>
         </StackPanel>
         <TabControl Grid.Column="1"   FontSize="35" >
@@ -42,8 +42,8 @@
                         <Label Name="YesNoQuestionField" Content="Question Field"  VerticalAlignment="Center" Margin="100"/>
                     </StackPanel>
                     <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button Content="Yes" FontSize="20"  Width="200" HorizontalAlignment="Center"  Margin="100" Click="AnswerYesNo"/>
-                        <Button Content="No" FontSize="20" Width="200" HorizontalAlignment="Center" Margin="100" Click="AnswerYesNo"/>
+                        <Button IsEnabled="false"  Name="YesButton" Content="Yes" FontSize="20"  Width="200" HorizontalAlignment="Center"  Margin="100" Click="AnswerYesNo"/>
+                        <Button IsEnabled="False" Name="NoButton" Content="No" FontSize="20" Width="200" HorizontalAlignment="Center" Margin="100" Click="AnswerYesNo"/>
                     </StackPanel>
                  <StackPanel Grid.Row="3" >
                      <Button Content="Начать" Width="200" Background="#FF673AB7" Style="{StaticResource MaterialDesignFlatButton}" Foreground="White" Click="StartLearnModuleButton"/>
@@ -113,14 +113,14 @@
                         <RowDefinition></RowDefinition>
                         <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
-                    <Label Name="SpellingLabel" Grid.Row="0"  Content="Something" VerticalContentAlignment="Center" HorizontalAlignment="Center" />
+                    <Label Name="SpellingLabel" Grid.Row="0"  Content="Something" VerticalContentAlignment="Center" HorizontalAlignment="Center" FontSize="50"/>
                     <TextBox Name="AnswerBox" Grid.Row="1" Text="Dsf" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource MaterialDesignTextBox}"/>
-                    <Button Name="SpellingStartButton" Grid.Row="2" Content="Answer"  VerticalAlignment="Top" HorizontalAlignment="Center" Click="AnswerButtonSpelling" IsEnabled="False"/>
+                    <Button Name="SpellingStartButton" Grid.Row="2" Content="Answer"  VerticalAlignment="Top" HorizontalAlignment="Center" Click="AnswerButtonSpelling" IsEnabled="False" Width="200" Height="50" FontSize="25"/>
                     <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" >
-                        <Button  Content="Start"   Click="StartSpellingModule" />
+                        <Button  Content="Start"   Click="StartSpellingModule" Width="200" Height="50" FontSize="25"/>
                         <Label Content="Изменить режим" Margin="50"/>
                         <ToggleButton  Name="isModeReverse"/>
-                        <Button  Content="Stop"   Click="StopSpellingModule" Margin="50"/>
+                        <Button  Content="Stop"   Click="StopSpellingModule" Margin="50" Width="200" Height="50" FontSize="25"/>
                     </StackPanel>
                 </Grid>
             </TabItem>
@@ -141,8 +141,13 @@
                 </Grid>
             </TabItem>
             <TabItem Visibility="Collapsed"  Name="Pair"  Foreground="Black"  >
-                <Canvas Margin="50" Background="#FF00A6DE" Name="GridCanvas" AllowDrop="True" Drop="GridButtons_OnDrop" DragOver="GridCanvas_OnDragOver">
-                </Canvas>
+                <Grid>
+                    <Canvas Margin="50" Background="CornflowerBlue" Name="GridCanvas" AllowDrop="True" Drop="GridButtons_OnDrop" DragOver="GridCanvas_OnDragOver">
+                    </Canvas>
+                    <Slider Name="WordsCounter" Maximum="12"  Minimum="2" HorizontalAlignment="Left" Margin="20" VerticalAlignment="Bottom" Width="200" ValueChanged="Slider_ValueChanged" />
+                    <Button Content="CheckAnswer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="200" Margin="20" Click="PairGameCheckResult"/>
+                </Grid>
+                
             </TabItem>
         </TabControl>
 

@@ -26,7 +26,7 @@ namespace Quizlet
             ansList = new List<string>();
 
             SQLiteDataReader reader;
-            SQLiteCommand command = new SQLiteCommand($"select Word, Meaning from Words where Module_id='{ModuleId}'", db);
+            SQLiteCommand command = new($"select Word, Meaning from Words where Module_id='{ModuleId}'", db);
             reader = command.ExecuteReader();
 
             foreach (DbDataRecord el in reader)
@@ -49,7 +49,7 @@ namespace Quizlet
         public bool GetResult()
         {
             SQLiteDataReader reader;
-            SQLiteCommand command2 = new SQLiteCommand($"SELECT Meaning from Words where Word = '{QuestionField}'", db);
+            SQLiteCommand command2 = new($"SELECT Meaning from Words where Word = '{QuestionField}'", db);
             reader = command2.ExecuteReader();
             string word = "";
             foreach (DbDataRecord el in reader)

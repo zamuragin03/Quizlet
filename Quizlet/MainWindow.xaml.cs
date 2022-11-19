@@ -34,8 +34,8 @@ namespace Quizlet
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         delegate void InfoHandler(string text);
-        private string data;
-        SQLiteConnection db;
+
+        readonly SQLiteConnection db;
         SQLiteCommand command;
 
         private Label currentLabel;
@@ -44,12 +44,15 @@ namespace Quizlet
             Stated,
             Unstated,
         }
+        private State state;
 
         private List<Word> WordList;
         private int CurrentWord;
 
-        private State state;
-        private InfoHandler messageBoxHandler;
+        private (List<string>, List<string>) currendWords;
+
+        
+        private readonly InfoHandler messageBoxHandler;
         private YesNoGame yesnogame;
         private SpellingGame spellinggame;
         private PairGame pairgame;
@@ -100,13 +103,13 @@ namespace Quizlet
             string WordMeaningText = WordMeaning.Text;
             string ModuleName = ModuleNames.Text;
 
-            if (String.IsNullOrEmpty(WordMeaningText.Trim()) || string.IsNullOrEmpty(WordnNameText.Trim()))
+            if (String.IsNullOrEmpty(WordMeaningText.Trim()) || string.IsNullOrEmpty(WordnNameText.Trim()) || string.IsNullOrEmpty(ModuleName))
             {
                 messageBoxHandler.Invoke("Не вводите пустые");
                 return;
             }
             SQLiteDataReader reader;
-            SQLiteCommand command2 = new SQLiteCommand($"SELECT Module_id from Modules where Module_Name = '{ModuleName}'", db);
+            SQLiteCommand command2 = new($"SELECT Module_id from Modules where Module_Name = '{ModuleName}'", db);
             reader = command2.ExecuteReader();
             string ModuleNameId = "";
             foreach (DbDataRecord el in reader)
@@ -142,10 +145,10 @@ namespace Quizlet
             command = new SQLiteCommand("select Word, Meaning, Module_Name from Words inner join Modules on Words.Module_id = Modules.Module_id", db);
             reader = command.ExecuteReader();
             Word_List.ItemsSource = null;
-            List<Word> words = new List<Word>();
+            List<Word> words = new();
             foreach (DbDataRecord item in reader)
             {
-                Word temp = new Word()
+                Word temp = new()
                 {
                     Module_Name = item["Module_Name"].ToString(),
                     Word_Meaning = item["Meaning"].ToString(),
@@ -167,7 +170,7 @@ namespace Quizlet
             ModuleNamesColumn.Items.Clear();
             foreach (DbDataRecord item in reader)
             {
-                Word temp = new Word()
+                Word temp = new()
                 {
                     Module_Name = item["Module_Name"].ToString(),
                     Word_Meaning = null,
@@ -224,10 +227,10 @@ namespace Quizlet
             }
             catch (Exception e)
             {
-                Log.Error(e.Message,"Не добавлены слова");
+                Log.Error(e.Message, "Не добавлены слова");
                 messageBoxHandler.Invoke("Не добавлены слова");
             }
-            
+
         }
         private void LearnModule(object sender, RoutedEventArgs e)
         {
@@ -236,6 +239,8 @@ namespace Quizlet
             if (state == State.Unstated)
             {
                 LearnItem.IsSelected = true;
+                YesButton.IsEnabled = true;
+                NoButton.IsEnabled = true;
                 ChangeSelectedButtonBackground(el);
 
             }
@@ -243,7 +248,7 @@ namespace Quizlet
         private void AddWord(object sender, RoutedEventArgs e)
         {
             Button el = sender as Button;
-            
+
             if (state == State.Unstated)
             {
                 AddWords.IsSelected = true;
@@ -313,10 +318,6 @@ namespace Quizlet
             {
                 Pair.IsSelected = true;
                 ChangeSelectedButtonBackground(el);
-                PairGame();
-
-
-
             }
         }
         private void AnswerButtonSpelling(object sender, RoutedEventArgs e)
@@ -325,10 +326,10 @@ namespace Quizlet
             int result = spellinggame.CheckAnswer(answer, isModeReverse.IsChecked.Value);
             var answers = spellinggame.GetResult();
             if (result <= 2)
-              Spelling_();
+                Spelling_();
             else
             {
-                messageBoxHandler.Invoke("Ваш ответ "+ answers.Item1+" \n"+ "Правильный ответ "+ answers.Item2);
+                messageBoxHandler.Invoke("Ваш ответ " + answers.Item1 + " \n" + "Правильный ответ " + answers.Item2);
             }
 
 
@@ -342,6 +343,7 @@ namespace Quizlet
                 return;
             }
 
+            
             SpellingStartButton.IsEnabled = true;
             Spelling_();
             state = State.Stated;
@@ -369,7 +371,7 @@ namespace Quizlet
             int CurrentModule_Id = 0;
             string ModuleName = ModuleNamesColumn.Text;
             SQLiteDataReader reader;
-            SQLiteCommand command2 = new SQLiteCommand($"SELECT Module_id from Modules where Module_Name = '{ModuleName}'", db);
+            SQLiteCommand command2 = new($"SELECT Module_id from Modules where Module_Name = '{ModuleName}'", db);
             reader = command2.ExecuteReader();
             foreach (DbDataRecord el in reader)
             {
@@ -419,6 +421,7 @@ namespace Quizlet
             catch (Exception exception)
             {
                 messageBoxHandler.Invoke("Некуда назад двигаться");
+                CurrentWord++;
             }
         }
         private void NextWord(object sender, RoutedEventArgs e)
@@ -432,23 +435,26 @@ namespace Quizlet
             catch (Exception exception)
             {
                 messageBoxHandler.Invoke("Некуда вперед двигаться");
+                CurrentWord--;
             }
-            
+
         }
-        void ChangeSelectedButtonBackground(Button button, bool flag=true)
+        void ChangeSelectedButtonBackground(Button button, bool flag = true)
         {
 
             foreach (UIElement btn in Buttons.Children)
             {
                 if (btn is Button btn_)
                 {
-                  btn_.Background = new SolidColorBrush(Colors.DeepSkyBlue);
+                    btn_.Foreground = new SolidColorBrush(Colors.Black);
+                    btn_.Background = new SolidColorBrush(Colors.DeepSkyBlue);
 
                 }
             }
             if (flag)
             {
-                button.Background = new SolidColorBrush(Colors.Blue);
+                button.Foreground = new SolidColorBrush(Colors.White);
+                button.Background = new SolidColorBrush(Colors.DarkSlateBlue);
             }
 
         }
@@ -460,23 +466,27 @@ namespace Quizlet
 
         void PairGame()
         {
-            pairgame = new PairGame(GetCurrentModuleId());
-            var res = pairgame.StartGame();
+            pairgame = new PairGame(GetCurrentModuleId(), (int)WordsCounter.Value);
+            currendWords = pairgame.StartGame();
             GridCanvas.Children.Clear();
             Random rnd = new();
-            for (int i = 1; i <= res.Item1.Count; i++)
+            for (int i = 1; i <= currendWords.Item1.Count; i++)
             {
-                Label lbl = new Label();
-                lbl.Content = res.Item1[i-1];
+                Label lbl = new()
+                {
+                    Content = currendWords.Item1[i - 1]
+                };
                 lbl.MouseMove += Handler;
-                Canvas.SetLeft(lbl,rnd.Next(800));
-                Canvas.SetTop(lbl,rnd.Next(500));
+                Canvas.SetLeft(lbl, rnd.Next(700));
+                Canvas.SetTop(lbl, rnd.Next(500));
                 GridCanvas.Children.Add(lbl);
             }
-            for (int i = 1; i <= res.Item2.Count; i++)
+            for (int i = 1; i <= currendWords.Item2.Count; i++)
             {
-                Label lbl = new Label();
-                lbl.Content = res.Item2[i-1];
+                Label lbl = new()
+                {
+                    Content = currendWords.Item2[i - 1]
+                };
                 lbl.MouseMove += Handler;
                 Canvas.SetLeft(lbl, rnd.Next(800));
                 Canvas.SetTop(lbl, rnd.Next(500));
@@ -495,17 +505,67 @@ namespace Quizlet
             }
         }
 
-        private void GridButtons_OnDrop(object sender, DragEventArgs e)
-        {
-            
-        }
-
+        private void GridButtons_OnDrop(object sender, DragEventArgs e) { }
 
         private void GridCanvas_OnDragOver(object sender, DragEventArgs e)
         {
             Point p = e.GetPosition(GridCanvas);
             Canvas.SetLeft(currentLabel, p.X);
             Canvas.SetTop(currentLabel, p.Y);
+        }
+
+        private void PairGameCheckResult(object sender, RoutedEventArgs e)
+        {
+            var WordNames = currendWords.Item1;
+            var WordMeanings = currendWords.Item2;
+            List<Label> listtoremove = new();
+
+            foreach (Label element in GridCanvas.Children)
+            {
+                Label l = Quizlet.PairGame.FindNearLabel(GridCanvas, element);
+                if (l is null)
+                {
+                    //messageBoxHandler.Invoke(element.Content.ToString() + "без пары");
+                    element.Foreground = new SolidColorBrush(Colors.Red);
+                }
+                else
+                {
+                    for (int i = 0; i < WordNames.Count; i++)
+                    {
+                        if (WordNames[i].Equals(l.Content) && WordMeanings[i].Equals(element.Content))
+                        {
+                            //s += l.Content.ToString() + " " + element.Content + " Верно" + "\n";
+                            listtoremove.Add(element);
+                            listtoremove.Add(l);
+                        }
+                        else
+                        {
+                            element.Foreground = new SolidColorBrush(Colors.Red);
+                            l.Foreground = new SolidColorBrush(Colors.Red);
+
+                        }
+                    }
+
+                    
+                }
+            }
+            foreach (var label in listtoremove)
+            {
+                GridCanvas.Children.Remove(label);
+            }
+
+            if (listtoremove.Distinct().Count()==WordMeanings.Count)
+            {
+                messageBoxHandler.Invoke($"Модуль {ModuleNamesColumn.Text} Завершен");
+            }
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (Pair.IsSelected )
+            {
+                PairGame();
+            }
         }
     }
     class Word
